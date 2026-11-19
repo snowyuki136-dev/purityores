@@ -142,7 +142,12 @@ for (oid, stone_name, deep_name, drop, dmin, dmax, count, miny, maxy, tool, biom
             name = f"{tier}_{'deepslate_' if deepslate else ''}{oid}_ore"
             all_blocks.append(f"{MOD}:{name}")
             lang[f"block.{MOD}.{name}"] = title(name)
-            put(f"assets/{MOD}/blockstates/{name}.json", {"variants": {"": {"model": f"{MOD}:block/{name}"}}})
+            model = {"model": f"{MOD}:block/{name}"}
+            if oid == "redstone":  # redstone ore blocks have a "lit" property
+                variants = {"lit=false": model, "lit=true": model}
+            else:
+                variants = {"": model}
+            put(f"assets/{MOD}/blockstates/{name}.json", {"variants": variants})
             put(f"assets/{MOD}/models/block/{name}.json",
                 {"parent": "minecraft:block/cube_all", "textures": {"all": f"{MOD}:block/{name}"}})
             put(f"assets/{MOD}/models/item/{name}.json", {"parent": f"{MOD}:block/{name}"})

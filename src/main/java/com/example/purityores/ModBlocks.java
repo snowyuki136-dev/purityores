@@ -3,7 +3,10 @@ package com.example.purityores;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.DropExperienceBlock;
+import net.minecraft.world.level.block.RedStoneOreBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -33,8 +36,21 @@ public class ModBlocks {
     private static void register(OreType type, Tier tier, boolean deepslate) {
         String name = blockName(type, tier, deepslate);
         Block base = deepslate ? type.deepslate : type.stone;
-        DeferredBlock<Block> block = BLOCKS.registerSimpleBlock(name, BlockBehaviour.Properties.ofFullCopy(base));
+        BlockBehaviour.Properties props = BlockBehaviour.Properties.ofFullCopy(base);
+        DeferredBlock<Block> block = BLOCKS.<Block>registerBlock(name, p -> createBlock(type, p), props);
         ITEMS.registerSimpleBlockItem(block);
         ORES.put(name, block);
+    }
+
+    /** Matches the vanilla block class of each ore (redstone needs its "lit" property, others drop XP). */
+    private static Block createBlock(OreType type, BlockBehaviour.Properties props) {
+        return switch (type) {
+            case REDSTONE -> new RedStoneOreBlock(props);
+            case COAL -> new DropExperienceBlock(UniformInt.of(0, 2), props);
+            case LAPIS, NETHER_QUARTZ -> new DropExperienceBlock(UniformInt.of(2, 5), props);
+            case DIAMOND, EMERALD -> new DropExperienceBlock(UniformInt.of(3, 7), props);
+            case NETHER_GOLD -> new DropExperienceBlock(UniformInt.of(0, 1), props);
+            default -> new Block(props);
+        };
     }
 }
